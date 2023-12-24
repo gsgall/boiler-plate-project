@@ -6,7 +6,7 @@ on:
       - main
 
 jobs:
-  build-website:
+  linux-build:
     runs-on: ubuntu-latest
     # Set up a default shell for all steps
     # See: https://github.com/marketplace/actions/setup-miniconda#use-a-default-shell
