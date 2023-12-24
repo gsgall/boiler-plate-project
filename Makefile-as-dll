@@ -1,0 +1,49 @@
+# Compiler settings
+CXX = g++
+CXXFLAGS = -std=c++20 -g -Wall -Werror
+
+PROJECT_NAME = boiler-plate-project
+# Library settings
+# linux: .so
+# macOS: .dylib
+# Windows: .dll
+LIBRARY_NAME = lib$(PROJECT_NAME).dylib  # Change the extension based on the platform (.so, .dylib, .dll)
+
+# Directories
+SRCDIR = src
+INCDIR = include/boiler-plate-project
+BUILDDIR = build
+
+# Source and header files
+SOURCES = $(wildcard $(SRCDIR)/*.C)
+HEADERS = $(wildcard $(INCDIR)/*.h)
+OBJECTS = $(patsubst $(SRCDIR)/%.C,$(BUILDDIR)/%.o,$(SOURCES))
+
+# Include and library paths
+INCLUDE_PATH = -I$(CONDA_PREFIX)/include
+LIBRARY_PATH = -L$(CONDA_PREFIX)/lib
+
+# Build the shared library
+$(LIBRARY_NAME): $(OBJECTS)
+	@$(CXX) $(CXXFLAGS) -shared -o $(LIBRARY_NAME) $(OBJECTS)
+
+# Build all of the source files for the library
+$(BUILDDIR)/%.o: $(SRCDIR)/%.C
+	@mkdir -p $(@D)
+	@$(CXX) $(CXXFLAGS) -fPIC -I$(INCDIR) $(INCLUDE_PATH) -c $< -o $@
+
+# Rule to create the library and executable
+all: $(LIBRARY_NAME)
+
+# Clean the build artifacts
+clean:
+	@rm -rf *.dSYM
+	@rm -f $(LIBRARY_NAME)
+	@rm -rf $(BUILDDIR)/*
+
+install: all
+	mkdir -p $(CONDA_PREFIX)/include/$(PROJECT_NAME)
+	@cp $(HEADERS) $(CONDA_PREFIX)/include/$(PROJECT_NAME)
+	@mv $(LIBRARY_NAME) $(CONDA_PREFIX)/lib
+
+.PHONY: all clean
