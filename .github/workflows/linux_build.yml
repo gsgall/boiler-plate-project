@@ -30,6 +30,8 @@ jobs:
     - name: Build and run tests
       run: |
         conda activate bpp
+        export LD_LIBRARY_PATH="$CONDA_PREFIX/lib:$LD_LIBRARY_PATH
         cd test
         make -j 2
         ./run_tests
+
