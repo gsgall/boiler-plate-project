@@ -7,8 +7,9 @@ SRC = main.C
 EXE = main
 
 # Directories
+PROJECT = boiler-plate-project
 SRCDIR = src
-INCDIR = include/boiler-plate-project
+INCDIR = include
 BUILDDIR = build
 
 # Source and header files
@@ -31,7 +32,7 @@ all: $(EXE)
 # build all of the source files for the parser
 $(BUILDDIR)/%.o: $(SRCDIR)/%.C
 	@mkdir -p $(@D)
-	@$(CXX) $(CXXFLAGS) -I$(INCDIR) $(INCLUDE_PATH) -c $< -o $@
+	@$(CXX) $(CXXFLAGS)  -I$(INCDIR)/$(PROJECT) $(INCLUDE_PATH) -c $< -o $@
 
 # clean up the parser
 clean:
