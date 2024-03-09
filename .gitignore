@@ -1,0 +1,7 @@
+*.dSYM
+*/build
+*/main
+*/run_tests
+.DS_Store
+*/output
+*.txt
