@@ -1,0 +1,18 @@
+[
+	{
+		"arguments": [
+			"clang",
+			"/Users/graysongall/projects/boiler-plate-project/main.C",
+			"-o",
+			"/Users/graysongall/.cache/zig/main.C.o",
+			"-std=c++17",
+			"-Wall",
+			"-Wextra",
+			"-ltest",
+			"-I/Users/graysongall/projects/boiler-plate-project/zig-out/include"
+		],
+		"directory": "/Users/graysongall/projects/boiler-plate-project",
+		"file": "/Users/graysongall/projects/boiler-plate-project/main.C",
+		"output": "/Users/graysongall/.cache/zig/main.C.o"
+	}
+]
