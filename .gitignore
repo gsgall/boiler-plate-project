@@ -5,3 +5,6 @@ main
 .DS_Store
 */output
 *.txt
+.zig-cache
+zig-out
+compile_commands.json

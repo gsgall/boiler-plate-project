@@ -1,129 +1,67 @@
 const std = @import("std");
-const zcc = @import("compile_commands");
-
-//pub fn build(b: *std.Build) void {
-//    const target = b.standardTargetOptions(.{});
-//    const optimize = b.standardOptimizeOption(.{});
-// const exe = b.addExecutable(.{ .name = "main", .root_module = b.createModule(.{
-//        .target = target,
-//        .optimize = optimize,
-//    }) });
-//    // Add all C++ source files
-//    exe.addCSourceFiles(.{
-//        .files = &.{
-//            "main.C",
-//            "src/File1.C",
-//        },
-//        .flags = &.{ "-std=c++17", "-Wall", "-Wextra", "-gen-cdb-fragment-path", ".cache/cdb" },
-//    });
-//
-//    // Add include directory
-//    exe.addIncludePath(b.path("include"));
-//    exe.addIncludePath(b.path("include/boiler-plate-project"));
-//    // Link C++ standard library
-//    exe.linkLibCpp();
-//    // Install the executable
-//    b.installArtifact(exe);
-//    var targets = std.ArrayListUnmanaged(*std.Build.Step.Compile){};
-//    targets.append(b.allocator, exe) catch @panic("OOM");
-//    _ = zcc.createStep(b, "cdb", targets.toOwnedSlice(b.allocator) catch @panic("OOM"));
-//}
-
-//pub fn build(b: *std.Build) void {
-//    const target = b.standardTargetOptions(.{});
-//    const optimize = b.standardOptimizeOption(.{});
-//    const lib = b.addLibrary(.{ .name = "test", .linkage = .dynamic, .root_module = b.createModule(.{
-//        .target = target,
-//        .optimize = optimize,
-//    }) });
-//
-//    lib.addCSourceFiles(.{
-//        .files = &.{"src/File1.C"},
-//        .flags = &.{ "-std=c++17", "-Wall", "-Wextra" },
-//    });
-//
-//    lib.addIncludePath(b.path("include/boiler-plate-project"));
-//
-//    lib.linkLibCpp();
-//    lib.installHeadersDirectory(b.path("include"), "", .{});
-//
-//    b.installArtifact(lib);
-//}
-
-//pub fn build(b: *std.Build) void {
-//    const target = b.standardTargetOptions(.{});
-//    const optimize = b.standardOptimizeOption(.{});
-//
-//    const exe = b.addExecutable(.{ .name = "main", .root_module = b.createModule(.{
-//        .target = target,
-//        .optimize = optimize,
-//    }) });
-//    // Add all C++ source files
-//    exe.addCSourceFiles(.{
-//        .files = &.{
-//            "main.C",
-//        },
-//        .flags = &.{ "-std=c++17", "-Wall", "-Wextra" },
-//    });
-//
-//    exe.addLibraryPath(b.path("zig-out/lib"));
-//    exe.linkSystemLibrary("test");
-//
-//    exe.addIncludePath(b.path("zig-out/include"));
-//    exe.linkLibCpp();
-//
-//    b.installArtifact(exe);
-//    var targets = std.ArrayListUnmanaged(*std.Build.Step.Compile){};
-//    targets.append(b.allocator, exe) catch @panic("OOM");
-//    _ = zcc.createStep(b, "cdb", targets.toOwnedSlice(b.allocator) catch @panic("OOM"));
-//}
 
 pub fn build(b: *std.Build) !void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
+    const linkage = b.option(std.builtin.LinkMode, "linkage", "static or dynamic linkage") orelse .static;
+    const foo = b.option(bool, "foo", "whether or not to include and build foo") orelse true;
+    const bar = b.option(bool, "bar", "whether or not to include and build bar") orelse true;
+
+    const libfoo = b.addLibrary(.{ .name = "libfoo", .linkage = linkage, .root_module = b.createModule(.{
+        .target = target,
+        .optimize = optimize,
+    }) });
+
+    libfoo.addIncludePath(b.path("libfoo/include"));
+    libfoo.addCSourceFile(.{
+        .file = b.path("libfoo/src/Foo.C"),
+        .flags = &.{
+            "-std=c++17",
+            "-g",
+        },
+    });
+    libfoo.linkLibCpp();
+    libfoo.installHeadersDirectory(b.path("libfoo/include"), "libfoo", .{});
+
+    const libbar = b.addLibrary(.{ .name = "libfoo", .linkage = linkage, .root_module = b.createModule(.{
+        .target = target,
+        .optimize = optimize,
+    }) });
+
+    libbar.addIncludePath(b.path("libbar/include"));
+    libbar.addCSourceFile(.{
+        .file = b.path("libbar/src/Bar.C"),
+        .flags = &.{
+            "-std=c++17",
+            "-g",
+        },
+    });
+    libbar.linkLibCpp();
+    libbar.installHeadersDirectory(b.path("libbar/include"), "libbar", .{});
 
     const exe = b.addExecutable(.{ .name = "main", .root_module = b.createModule(.{
         .target = target,
         .optimize = optimize,
     }) });
 
-    // Collect all C source files
-    var src_dir = try std.fs.cwd().openDir("src", .{ .iterate = true });
-    defer src_dir.close();
-
-    var c_files = std.ArrayList([]const u8){};
-    defer c_files.deinit(b.allocator);
-
-    var iter = src_dir.iterate();
-    while (try iter.next()) |entry| {
-        if (entry.kind == .file and std.mem.endsWith(u8, entry.name, ".C")) {
-            const path = try std.fs.path.join(b.allocator, &.{ "src", entry.name });
-            try c_files.append(b.allocator, path);
-        }
+    if (foo) {
+        exe.linkLibrary(libfoo);
+        exe.root_module.addCMacro("FOO", "");
     }
-    try c_files.append(b.allocator, "main.C");
-    // Add all C++ source files
-    exe.addCSourceFiles(.{
-        .files = c_files.items,
+    if (bar) {
+        exe.linkLibrary(libbar);
+        exe.root_module.addCMacro("BAR", "");
+    }
+    exe.addIncludePath(b.path("include")); // Only include, not include/path
+    exe.addCSourceFile(.{
+        .file = b.path("main.C"),
         .flags = &.{
             "-std=c++17",
             "-g",
-            "-Wall",
-            "-Wextra",
         },
     });
 
-    // Add include directory
-    exe.addIncludePath(b.path("include"));
-    exe.addIncludePath(b.path("include/boiler-plate-project"));
-    // Link C++ standard library
     exe.linkLibCpp();
-    // Install the executable
-
-    const install_exe = b.addInstallArtifact(exe, .{ .dest_dir = .{ .override = .prefix } });
-
-    b.getInstallStep().dependOn(&install_exe.step);
-    var targets = std.ArrayListUnmanaged(*std.Build.Step.Compile){};
-    targets.append(b.allocator, exe) catch @panic("OOM");
-    _ = zcc.createStep(b, "cdb", targets.toOwnedSlice(b.allocator) catch @panic("OOM"));
+    b.installArtifact(libfoo);
+    b.installArtifact(exe);
 }
