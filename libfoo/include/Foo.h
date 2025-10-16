@@ -3,7 +3,7 @@
 class Foo
 {
 public:
-  Foo(std::string test);
+  Foo(const std::string & test);
   ~Foo() = default;
 
 private:

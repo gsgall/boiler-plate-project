@@ -14,7 +14,7 @@ pub fn build(b: *std.Build) !void {
 
     libfoo.addIncludePath(b.path("libfoo/include"));
     libfoo.addCSourceFile(.{
-        .file = b.path("libfoo/src/Foo.C"),
+        .file = b.path("libfoo/src/Foo.cpp"),
         .flags = &.{
             "-std=c++17",
             "-g",
@@ -30,7 +30,7 @@ pub fn build(b: *std.Build) !void {
 
     libbar.addIncludePath(b.path("libbar/include"));
     libbar.addCSourceFile(.{
-        .file = b.path("libbar/src/Bar.C"),
+        .file = b.path("libbar/src/Bar.cpp"),
         .flags = &.{
             "-std=c++17",
             "-g",
@@ -54,7 +54,7 @@ pub fn build(b: *std.Build) !void {
     }
     exe.addIncludePath(b.path("include")); // Only include, not include/path
     exe.addCSourceFile(.{
-        .file = b.path("main.C"),
+        .file = b.path("main.cpp"),
         .flags = &.{
             "-std=c++17",
             "-g",

@@ -3,7 +3,7 @@
 class Bar
 {
 public:
-  Bar(std::string test);
+  Bar(const std::string & test);
   ~Bar() = default;
 
 private:
