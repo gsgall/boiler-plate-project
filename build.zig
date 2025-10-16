@@ -44,13 +44,13 @@ pub fn build(b: *std.Build) !void {
         .optimize = optimize,
     }) });
 
-    if (foo) {
-        exe.root_module.addCMacro("FOO", "");
-        exe.linkLibrary(libfoo);
-    }
     if (bar) {
         exe.root_module.addCMacro("BAR", "");
         exe.linkLibrary(libbar);
+    }
+    if (foo) {
+        exe.root_module.addCMacro("FOO", "");
+        exe.linkLibrary(libfoo);
     }
     exe.addIncludePath(b.path("include")); // Only include, not include/path
     exe.addCSourceFile(.{
