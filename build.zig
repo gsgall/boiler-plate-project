@@ -45,12 +45,12 @@ pub fn build(b: *std.Build) !void {
     }) });
 
     if (foo) {
-        exe.linkLibrary(libfoo);
         exe.root_module.addCMacro("FOO", "");
+        exe.linkLibrary(libfoo);
     }
     if (bar) {
-        exe.linkLibrary(libbar);
         exe.root_module.addCMacro("BAR", "");
+        exe.linkLibrary(libbar);
     }
     exe.addIncludePath(b.path("include")); // Only include, not include/path
     exe.addCSourceFile(.{
@@ -64,4 +64,19 @@ pub fn build(b: *std.Build) !void {
     exe.linkLibCpp();
     b.installArtifact(libfoo);
     b.installArtifact(exe);
+
+    // Create the run step
+    const run_cmd = b.addRunArtifact(exe);
+
+    // This allows the run step to inherit stdio, so you can see output
+    run_cmd.step.dependOn(b.getInstallStep());
+
+    // Forward command line arguments to the executable
+    if (b.args) |args| {
+        run_cmd.addArgs(args);
+    }
+
+    // Create a named run step
+    const run_step = b.step("run", "Run the main executable");
+    run_step.dependOn(&run_cmd.step);
 }
